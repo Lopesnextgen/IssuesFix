@@ -1,0 +1,17 @@
+{
+	"required": true,
+	"minVersion": "0.8",
+	"package": "davi.lopes.issuesfix.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"client": [
+		"AvatarRenderStateMixin",
+		"AvatarRendererNameTagMixin",
+		"ClientPacketListenerCommandMixin",
+		"LivingEntityRendererNameTagMixin",
+		"LunarNameTagEventMixin",
+		"NameTagFeatureRendererStyleMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}
