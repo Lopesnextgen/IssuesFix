@@ -1,6 +1,5 @@
 package davi.lopes.issuesfix.lunar;
 
-import davi.lopes.issuesfix.config.ConfigManager;
 import davi.lopes.issuesfix.debug.IssuesFixDebug;
 
 import java.lang.reflect.Method;
@@ -22,7 +21,7 @@ public final class LunarNameTagCleaner {
     }
 
     public static boolean enabled() {
-        return ConfigManager.config().clearAllNametags;
+        return true;
     }
 
     public static void clear(Object event, List<?> lines) {

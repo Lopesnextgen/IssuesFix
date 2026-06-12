@@ -1,7 +1,10 @@
 package davi.lopes.issuesfix.nametag;
 
+import davi.lopes.issuesfix.debug.IssuesFixDebug;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -11,8 +14,17 @@ import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Team;
 
 import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public final class CustomNameTagFormatter {
+    private static final Pattern FACTION_TAG_PATTERN = Pattern.compile("\\[([^\\]]{1,16})\\]");
+    private static final Pattern INTERNAL_TEAM_PATTERN = Pattern.compile("(?i)^[0-9a-f][a-z0-9_]{2,16}a$");
+    private static final Map<String, Long> LAST_DEBUG = new ConcurrentHashMap<>();
+    private static final long DEBUG_INTERVAL_MS = 2500L;
+
     private CustomNameTagFormatter() {
     }
 
@@ -23,11 +35,10 @@ public final class CustomNameTagFormatter {
         }
 
         MutableComponent component = Component.literal(name).withStyle(isFriendly(avatar) ? ChatFormatting.GREEN : ChatFormatting.RED);
-        Component faction = factionTag(avatar, name);
-        String factionText = compact(faction);
-        if (!factionText.isBlank()) {
+        String faction = factionTag(avatar, name);
+        if (!faction.isBlank()) {
             component.append(Component.literal(" ").withStyle(ChatFormatting.GRAY));
-            component.append(Component.literal(factionText).withStyle(ChatFormatting.GRAY));
+            component.append(Component.literal(faction).withStyle(ChatFormatting.GRAY));
         }
         return component;
     }
@@ -56,9 +67,9 @@ public final class CustomNameTagFormatter {
             return true;
         }
 
-        String viewerFaction = factionKey(viewer);
-        String avatarFaction = factionKey(avatar);
-        return !viewerFaction.isBlank() && viewerFaction.equals(avatarFaction);
+        String viewerFaction = factionKey(factionTag(viewer, playerName(viewer)));
+        String avatarFaction = factionKey(factionTag(avatar, playerName(avatar)));
+        return !viewerFaction.isBlank() && viewerFaction.equalsIgnoreCase(avatarFaction);
     }
 
     private static boolean sameScoreboardTeam(LocalPlayer viewer, Avatar avatar) {
@@ -75,79 +86,110 @@ public final class CustomNameTagFormatter {
         return viewerTeam.isAlliedTo(avatarTeam) || avatarTeam.isAlliedTo(viewerTeam) || avatar.isAlliedTo(viewer);
     }
 
-    private static String factionKey(Entity entity) {
-        return key(factionTag(entity, playerName(entity)));
+    private static String factionTag(Entity entity, String name) {
+        String faction = firstFactionTag(name,
+            teamPrefix(entity.getTeam()),
+            teamSuffix(entity.getTeam()),
+            teamDisplayName(entity.getTeam()),
+            tabListDisplayName(entity),
+            entity.getDisplayName()
+        );
+        debugSources(entity, name, faction);
+        return faction;
     }
 
-    private static Component factionTag(Entity entity, String name) {
-        Component teamSuffix = teamSuffix(entity.getTeam());
-        if (teamSuffix != null && !teamSuffix.getString().trim().isEmpty()) {
-            return teamSuffix;
-        }
-
-        String displaySuffix = displayNameSuffix(entity.getDisplayName(), name);
-        if (!displaySuffix.isBlank()) {
-            return Component.literal(displaySuffix);
-        }
-
-        String teamName = teamName(entity.getTeam());
-        if (!teamName.isBlank()) {
-            return Component.literal(bracketed(teamName));
-        }
-
-        return null;
+    private static Component teamPrefix(Team team) {
+        return team instanceof PlayerTeam playerTeam ? playerTeam.getPlayerPrefix() : null;
     }
 
     private static Component teamSuffix(Team team) {
-        if (team instanceof PlayerTeam playerTeam) {
-            Component suffix = playerTeam.getPlayerSuffix();
-            if (suffix != null && !suffix.getString().trim().isEmpty()) {
-                return suffix;
-            }
-
-            Component displayName = playerTeam.getDisplayName();
-            if (displayName != null && !displayName.getString().trim().isEmpty()) {
-                return Component.literal(bracketed(displayName.getString()));
-            }
-        }
-        return null;
+        return team instanceof PlayerTeam playerTeam ? playerTeam.getPlayerSuffix() : null;
     }
 
-    private static String teamName(Team team) {
-        if (team == null || team.getName() == null) {
-            return "";
-        }
-        return clean(team.getName());
+    private static Component teamDisplayName(Team team) {
+        return team instanceof PlayerTeam playerTeam ? playerTeam.getDisplayName() : null;
     }
 
-    private static String displayNameSuffix(Component displayName, String name) {
-        if (displayName == null) {
+    private static Component tabListDisplayName(Entity entity) {
+        ClientPacketListener connection = Minecraft.getInstance().getConnection();
+        if (connection == null) {
+            return null;
+        }
+
+        PlayerInfo info = connection.getPlayerInfo(entity.getUUID());
+        return info == null ? null : info.getTabListDisplayName();
+    }
+
+    private static String firstFactionTag(String playerName, Component... components) {
+        for (Component component : components) {
+            String tag = factionTagFrom(component, playerName);
+            if (!tag.isBlank()) {
+                return tag;
+            }
+        }
+        return "";
+    }
+
+    private static String factionTagFrom(Component component, String playerName) {
+        String value = clean(component);
+        if (value.isBlank()) {
             return "";
         }
 
-        String value = clean(displayName.getString());
-        String cleanName = clean(name);
-        if (value.isBlank() || cleanName.isBlank()) {
-            return "";
+        Matcher matcher = FACTION_TAG_PATTERN.matcher(value);
+        while (matcher.find()) {
+            String tag = normalizeTag(matcher.group(1));
+            if (validFactionTag(tag) && !internalTag(tag, playerName)) {
+                return "[" + tag + "]";
+            }
+        }
+        return "";
+    }
+
+    private static String normalizeTag(String value) {
+        String clean = clean(value);
+        String role = "";
+        for (int index = 0; index < clean.length(); index++) {
+            String current = clean.substring(index, index + 1);
+            if ("#".equals(current) || "+".equals(current) || "-".equals(current)) {
+                role = current;
+                break;
+            }
+            if ("*".equals(current) || "⁎".equals(current)) {
+                role = "*";
+                break;
+            }
+            if (Character.isLetterOrDigit(clean.charAt(index))) {
+                break;
+            }
         }
 
-        int index = value.toLowerCase(Locale.ROOT).indexOf(cleanName.toLowerCase(Locale.ROOT));
-        if (index < 0) {
-            return "";
+        String tag = clean.replaceAll("[^A-Za-z0-9]", "").toUpperCase(Locale.ROOT);
+        return role + tag;
+    }
+
+    private static boolean validFactionTag(String tag) {
+        String faction = factionKey(tag);
+        return faction.length() >= 2 && faction.length() <= 8;
+    }
+
+    private static boolean internalTag(String tag, String playerName) {
+        String compactTag = tag.replaceAll("\\s+", "");
+        if (INTERNAL_TEAM_PATTERN.matcher(compactTag).matches()) {
+            return true;
         }
 
-        String tail = value.substring(index + cleanName.length()).trim();
-        if (tail.isBlank()) {
-            return "";
-        }
+        String normalizedTag = factionKey(compactTag).toLowerCase(Locale.ROOT);
+        String normalizedPlayer = clean(playerName).replaceAll("[^A-Za-z0-9_]", "").toLowerCase(Locale.ROOT);
+        return !normalizedPlayer.isBlank() && normalizedTag.contains(normalizedPlayer);
+    }
 
-        int open = tail.indexOf('[');
-        int close = tail.indexOf(']', open + 1);
-        if (open >= 0 && close > open) {
-            return tail.substring(open, close + 1).trim();
-        }
+    private static String factionKey(String faction) {
+        return clean(faction).replaceAll("[\\[\\]#\\+\\*⁎\\-\\s]", "");
+    }
 
-        return tail;
+    private static String clean(Component component) {
+        return component == null ? "" : clean(component.getString());
     }
 
     private static String clean(String value) {
@@ -159,25 +201,24 @@ public final class CustomNameTagFormatter {
         return stripped == null ? "" : stripped.trim();
     }
 
-    private static String key(Component component) {
-        return compact(component).replace("[", "").replace("]", "").replace("(", "").replace(")", "").replace(" ", "").toLowerCase(Locale.ROOT);
-    }
+    private static void debugSources(Entity entity, String name, String faction) {
+        long now = System.currentTimeMillis();
+        Long previous = LAST_DEBUG.get(name);
+        if (previous != null && now - previous < DEBUG_INTERVAL_MS) {
+            return;
+        }
+        LAST_DEBUG.put(name, now);
 
-    private static String compact(Component component) {
-        if (component == null) {
-            return "";
-        }
-        return clean(component.getString()).replaceAll("\\s+", " ");
-    }
-
-    private static String bracketed(String value) {
-        String clean = clean(value);
-        if (clean.isBlank()) {
-            return "";
-        }
-        if ((clean.startsWith("[") && clean.endsWith("]")) || (clean.startsWith("(") && clean.endsWith(")"))) {
-            return clean;
-        }
-        return "[" + clean + "]";
+        Team team = entity.getTeam();
+        IssuesFixDebug.log("nametag-source",
+            "player=" + name
+                + " faction=" + (faction.isBlank() ? "none" : faction)
+                + " teamName=" + (team == null ? "null" : clean(team.getName()))
+                + " prefix=" + clean(teamPrefix(team))
+                + " suffix=" + clean(teamSuffix(team))
+                + " teamDisplay=" + clean(teamDisplayName(team))
+                + " tab=" + clean(tabListDisplayName(entity))
+                + " display=" + clean(entity.getDisplayName())
+                + " name=" + clean(entity.getName()));
     }
 }

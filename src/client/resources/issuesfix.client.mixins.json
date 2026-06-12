@@ -11,7 +11,10 @@
 		"LivingEntityRendererNameTagMixin",
 		"LunarNameTagEventMixin",
 		"NameTagFeatureRendererStyleMixin",
-		"SodiumFogRendererMixin"
+		"NameTagFeatureStorageMixin",
+		"SodiumFogRendererMixin",
+		"TextDisplayEntityRenderStateMixin",
+		"TextDisplayRendererMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
