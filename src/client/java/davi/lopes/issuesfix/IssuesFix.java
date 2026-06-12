@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 public final class IssuesFix implements ClientModInitializer {
     public static final String MOD_ID = "issuesfix";
     public static final String MOD_NAME = "IssuesFix";
-    public static final String MOD_VERSION = "1.0.0";
+    public static final String MOD_VERSION = "1.1.0";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_NAME);
 
     @Override

@@ -2,7 +2,7 @@
 
 IssuesFix is a clean client-side Fabric mod for Minecraft `1.21.11` that repairs unstable player nametags without turning them into ESP.
 
-It replaces only player nicknames, keeps normal Minecraft visibility rules, and rebuilds the visible name using the server-provided scoreboard/team information.
+It replaces only player nicknames, keeps normal Minecraft visibility rules, removes duplicated server/Lunar name layers, and rebuilds the visible name using the data already sent by the server.
 
 ## Features
 
@@ -10,13 +10,18 @@ It replaces only player nicknames, keeps normal Minecraft visibility rules, and 
 - Normal Minecraft font rendering with resource-pack compatibility
 - Friendly player names turn green when they match your scoreboard team or detected faction tag
 - Enemy or non-matching player names render red
-- Faction/team suffix renders after the nickname in gray
+- Faction tags are read from scoreboard, player display data, and tablist names
+- Faction role symbols are preserved: `#` leader, `+` member, `*` captain, `-` recruit
+- Internal scoreboard team ids such as `[3playerA]` are ignored
+- Player faction suffix renders after the nickname in gray, for example `LTCFARM [#LTC]`
 - Compact name spacing with no extra scoreboard padding
 - Shadow text enabled for the custom nametag
 - Transparent nametag background
 - Fully opaque nametag text
 - No through-wall rendering
-- Does not hide world holograms, display entities, captions, or non-player labels
+- Removes duplicated player nametags from Lunar name events and Text Display entities
+- Does not hide world holograms, captions, or non-player labels
+- Removes Minecraft, Sodium, and Iris fog without changing chunk render distance
 - Optional player white-outline cleanup
 - `/issuefix` chat status with GitHub release update checking
 
@@ -47,7 +52,7 @@ If a newer release is available, click the underlined update line to open the la
 
 ## Installation
 
-1. Download `issuesfix-1.0.0.jar` from the latest release.
+1. Download `issuesfix-1.1.0.jar` from the latest release.
 2. Place it in your Fabric mods folder.
 3. Start Minecraft.
 4. Join a server and run `/issuefix` to verify the installation.
@@ -61,7 +66,7 @@ If a newer release is available, click the underlined update line to open the la
 The production JAR is generated at:
 
 ```text
-build/libs/issuesfix-1.0.0.jar
+build/libs/issuesfix-1.1.0.jar
 ```
 
 ## Configuration
@@ -79,6 +84,7 @@ Useful options:
 - `customNametags`: enables the repaired player nametag renderer
 - `customNametagBackground`: toggles the vanilla nametag background
 - `customNametagShadow`: toggles shadow text
+- `removeFog`: disables Minecraft fog
 - `playerOutlineFix`: enables player outline cleanup
 - `removeWhitePlayerOutlinesAutomatically`: removes unwanted white player outlines automatically
 - `playerOutlineWorlds`: optional world filter for outline cleanup
