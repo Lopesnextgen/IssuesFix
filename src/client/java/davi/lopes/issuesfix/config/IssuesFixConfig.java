@@ -8,6 +8,7 @@ public final class IssuesFixConfig {
     public boolean customNametags = true;
     public boolean customNametagBackground = false;
     public boolean customNametagShadow = true;
+    public boolean removeFog = true;
     public boolean nametagFix = true;
     public boolean onlyRepairMissingNametags = true;
     public boolean respectScoreboardNametags = true;

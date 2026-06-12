@@ -7,9 +7,11 @@
 		"AvatarRenderStateMixin",
 		"AvatarRendererNameTagMixin",
 		"ClientPacketListenerCommandMixin",
+		"FogRendererMixin",
 		"LivingEntityRendererNameTagMixin",
 		"LunarNameTagEventMixin",
-		"NameTagFeatureRendererStyleMixin"
+		"NameTagFeatureRendererStyleMixin",
+		"SodiumFogRendererMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
