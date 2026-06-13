@@ -22,6 +22,7 @@ It replaces only player nicknames, keeps normal Minecraft visibility rules, remo
 - No through-wall rendering
 - Removes duplicated player nametags from Lunar name events and Text Display entities
 - Does not hide world holograms, captions, or non-player labels
+- Removes large TNT explosion smoke particles
 - Removes Minecraft, Sodium, and Iris fog without changing chunk render distance
 - Optional player white-outline cleanup
 - `/issuefix` chat status with GitHub release update checking
@@ -53,7 +54,7 @@ If a newer release is available, click the underlined update line to open the la
 
 ## Installation
 
-1. Download `issuesfix-1.2.0.jar` from the latest release.
+1. Download `issuesfix-1.3.0.jar` from the latest release.
 2. Place it in your Fabric mods folder.
 3. Start Minecraft.
 4. Join a server and run `/issuefix` to verify the installation.
@@ -67,7 +68,7 @@ If a newer release is available, click the underlined update line to open the la
 The production JAR is generated at:
 
 ```text
-build/libs/issuesfix-1.2.0.jar
+build/libs/issuesfix-1.3.0.jar
 ```
 
 ## Configuration
@@ -86,6 +87,7 @@ Useful options:
 - `customNametagBackground`: toggles the vanilla nametag background
 - `customNametagShadow`: toggles shadow text
 - `removeFog`: disables Minecraft fog
+- `removeTntExplosionParticles`: removes large TNT explosion smoke particles
 - `playerOutlineFix`: enables player outline cleanup
 - `removeWhitePlayerOutlinesAutomatically`: removes unwanted white player outlines automatically
 - `playerOutlineWorlds`: optional world filter for outline cleanup

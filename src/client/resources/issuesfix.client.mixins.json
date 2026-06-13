@@ -6,6 +6,7 @@
 	"client": [
 		"AvatarRenderStateMixin",
 		"AvatarRendererNameTagMixin",
+		"ClientLevelParticleMixin",
 		"ClientPacketListenerCommandMixin",
 		"FogRendererMixin",
 		"LivingEntityRendererNameTagMixin",

@@ -9,6 +9,7 @@ public final class IssuesFixConfig {
     public boolean customNametagBackground = false;
     public boolean customNametagShadow = true;
     public boolean removeFog = true;
+    public Boolean removeTntExplosionParticles = true;
     public boolean nametagFix = true;
     public boolean onlyRepairMissingNametags = true;
     public boolean respectScoreboardNametags = true;
@@ -24,6 +25,9 @@ public final class IssuesFixConfig {
     public void normalize() {
         if (playerOutlineWorlds == null) {
             playerOutlineWorlds = new ArrayList<>();
+        }
+        if (removeTntExplosionParticles == null) {
+            removeTntExplosionParticles = true;
         }
         if (debugLogEveryMs < 100) {
             debugLogEveryMs = 100;
