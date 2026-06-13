@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class IssuesFixConfig {
+    public int configVersion = 2;
     public boolean clearAllNametags = true;
     public boolean customNametags = true;
     public boolean customNametagBackground = false;
@@ -15,7 +16,7 @@ public final class IssuesFixConfig {
     public boolean respectScoreboardNametags = true;
     public boolean playerOutlineFix = true;
     public boolean removeWhitePlayerOutlinesAutomatically = true;
-    public boolean debug = true;
+    public boolean debug = false;
     public int debugLogEveryMs = 1000;
     public int debugMaxLinesPerSession = 5000;
     public int lunarNametagPresenceMs = 900;
@@ -23,6 +24,10 @@ public final class IssuesFixConfig {
     public List<String> playerOutlineWorlds = new ArrayList<>();
 
     public void normalize() {
+        if (configVersion < 2) {
+            debug = false;
+            configVersion = 2;
+        }
         if (playerOutlineWorlds == null) {
             playerOutlineWorlds = new ArrayList<>();
         }

@@ -54,8 +54,12 @@ public final class IssuesFixDebug {
     public static void initialize() {
         LAST_LOGGED_AT.clear();
         LINES.set(0);
-        targets = discoverTargets();
         initialized = true;
+        if (!ConfigManager.config().debug) {
+            targets = List.of(CONFIG_PATH);
+            return;
+        }
+        targets = discoverTargets();
         writeRaw("");
         writeRaw("============================================================");
         writeRaw("IssuesFix " + IssuesFix.MOD_VERSION + " debug session started at " + LocalDateTime.now().format(FORMATTER));
@@ -152,7 +156,7 @@ public final class IssuesFixDebug {
         writeRaw("[" + LocalDateTime.now().format(FORMATTER) + "] [" + category + "] " + message);
     }
 
-    private static boolean enabled() {
+    public static boolean enabled() {
         IssuesFixConfig config = ConfigManager.config();
         return initialized && config.debug;
     }

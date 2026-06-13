@@ -227,6 +227,10 @@ public final class CustomNameTagFormatter {
     }
 
     private static void debugSources(Entity entity, String name, String faction, ScoreboardHealthProvider.Health health) {
+        if (!IssuesFixDebug.enabled()) {
+            return;
+        }
+
         long now = System.currentTimeMillis();
         Long previous = LAST_DEBUG.get(name);
         if (previous != null && now - previous < DEBUG_INTERVAL_MS) {

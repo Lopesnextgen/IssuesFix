@@ -13,10 +13,15 @@ import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class ScoreboardHealthProvider {
     private static final int MAX_REASONABLE_HEALTH = 2048;
+    private static final long SCOREBOARD_CACHE_MS = 1000L;
+    private static final Map<UUID, CachedHealth> SCOREBOARD_CACHE = new ConcurrentHashMap<>();
 
     private ScoreboardHealthProvider() {
     }
@@ -27,8 +32,22 @@ public final class ScoreboardHealthProvider {
             if (serverNameTagHealth != null) {
                 return new Health(serverNameTagHealth, "server_nametag");
             }
+
+            CachedHealth cached = SCOREBOARD_CACHE.get(player.getUUID());
+            long now = System.currentTimeMillis();
+            if (cached != null && now - cached.updatedAt() < SCOREBOARD_CACHE_MS) {
+                return cached.health();
+            }
+
+            Health resolved = resolveScoreboard(entity, visibleName);
+            SCOREBOARD_CACHE.put(player.getUUID(), new CachedHealth(resolved, now));
+            return resolved;
         }
 
+        return resolveScoreboard(entity, visibleName);
+    }
+
+    private static Health resolveScoreboard(Entity entity, String visibleName) {
         ClientPacketListener connection = Minecraft.getInstance().getConnection();
         if (connection == null) {
             return null;
@@ -110,5 +129,8 @@ public final class ScoreboardHealthProvider {
     }
 
     public record Health(int value, String source) {
+    }
+
+    private record CachedHealth(Health health, long updatedAt) {
     }
 }

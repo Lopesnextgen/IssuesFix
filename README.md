@@ -24,6 +24,7 @@ It replaces only player nicknames, keeps normal Minecraft visibility rules, remo
 - Does not hide world holograms, captions, or non-player labels
 - Removes large TNT explosion smoke particles
 - Removes Minecraft, Sodium, and Iris fog without changing chunk render distance
+- Optimized render-path caches with production debug logging disabled by default
 - Optional player white-outline cleanup
 - `/issuefix` chat status with GitHub release update checking
 
@@ -88,6 +89,7 @@ Useful options:
 - `customNametagShadow`: toggles shadow text
 - `removeFog`: disables Minecraft fog
 - `removeTntExplosionParticles`: removes large TNT explosion smoke particles
+- `debug`: enables diagnostic logging and should remain disabled during normal gameplay
 - `playerOutlineFix`: enables player outline cleanup
 - `removeWhitePlayerOutlinesAutomatically`: removes unwanted white player outlines automatically
 - `playerOutlineWorlds`: optional world filter for outline cleanup
