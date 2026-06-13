@@ -34,13 +34,44 @@ public final class CustomNameTagFormatter {
             return null;
         }
 
-        MutableComponent component = Component.literal(name).withStyle(isFriendly(avatar) ? ChatFormatting.GREEN : ChatFormatting.RED);
         String faction = factionTag(avatar, name);
+        ScoreboardHealthProvider.Health health = ScoreboardHealthProvider.resolve(avatar, name);
+        MutableComponent component = Component.literal("");
+        component.append(Component.literal(name).withStyle(isFriendly(avatar, faction) ? ChatFormatting.GREEN : ChatFormatting.RED));
+        appendHealth(component, health);
         if (!faction.isBlank()) {
             component.append(Component.literal(" ").withStyle(ChatFormatting.GRAY));
             component.append(Component.literal(faction).withStyle(ChatFormatting.GRAY));
         }
+        debugSources(avatar, name, faction, health);
         return component;
+    }
+
+    private static void appendHealth(MutableComponent component, ScoreboardHealthProvider.Health health) {
+        if (health == null) {
+            return;
+        }
+
+        ChatFormatting color = healthColor(health.value());
+        component.append(Component.literal(" ").withStyle(ChatFormatting.GRAY));
+        component.append(Component.literal(Integer.toString(health.value())).withStyle(color));
+        component.append(Component.literal("\u2764").withStyle(ChatFormatting.RED));
+    }
+
+    private static ChatFormatting healthColor(int health) {
+        if (health <= 0) {
+            return ChatFormatting.DARK_RED;
+        }
+        if (health <= 6) {
+            return ChatFormatting.RED;
+        }
+        if (health <= 10) {
+            return ChatFormatting.GOLD;
+        }
+        if (health <= 15) {
+            return ChatFormatting.YELLOW;
+        }
+        return ChatFormatting.GREEN;
     }
 
     private static String playerName(Entity entity) {
@@ -53,23 +84,19 @@ public final class CustomNameTagFormatter {
         return name == null ? "" : name.getString().trim();
     }
 
-    private static boolean isFriendly(Avatar avatar) {
+    private static boolean isFriendly(Avatar avatar, String avatarFaction) {
         LocalPlayer viewer = Minecraft.getInstance().player;
         if (viewer == null) {
             return false;
         }
 
-        if (avatar == viewer) {
-            return true;
-        }
-
-        if (sameScoreboardTeam(viewer, avatar)) {
+        if (avatar == viewer || sameScoreboardTeam(viewer, avatar)) {
             return true;
         }
 
         String viewerFaction = factionKey(factionTag(viewer, playerName(viewer)));
-        String avatarFaction = factionKey(factionTag(avatar, playerName(avatar)));
-        return !viewerFaction.isBlank() && viewerFaction.equalsIgnoreCase(avatarFaction);
+        String faction = factionKey(avatarFaction);
+        return !viewerFaction.isBlank() && viewerFaction.equalsIgnoreCase(faction);
     }
 
     private static boolean sameScoreboardTeam(LocalPlayer viewer, Avatar avatar) {
@@ -87,15 +114,13 @@ public final class CustomNameTagFormatter {
     }
 
     private static String factionTag(Entity entity, String name) {
-        String faction = firstFactionTag(name,
+        return firstFactionTag(name,
             teamPrefix(entity.getTeam()),
             teamSuffix(entity.getTeam()),
             teamDisplayName(entity.getTeam()),
             tabListDisplayName(entity),
             entity.getDisplayName()
         );
-        debugSources(entity, name, faction);
-        return faction;
     }
 
     private static Component teamPrefix(Team team) {
@@ -155,7 +180,7 @@ public final class CustomNameTagFormatter {
                 role = current;
                 break;
             }
-            if ("*".equals(current) || "⁎".equals(current)) {
+            if ("*".equals(current) || "\u204E".equals(current)) {
                 role = "*";
                 break;
             }
@@ -185,7 +210,7 @@ public final class CustomNameTagFormatter {
     }
 
     private static String factionKey(String faction) {
-        return clean(faction).replaceAll("[\\[\\]#\\+\\*⁎\\-\\s]", "");
+        return clean(faction).replaceAll("[^A-Za-z0-9]", "");
     }
 
     private static String clean(Component component) {
@@ -201,7 +226,7 @@ public final class CustomNameTagFormatter {
         return stripped == null ? "" : stripped.trim();
     }
 
-    private static void debugSources(Entity entity, String name, String faction) {
+    private static void debugSources(Entity entity, String name, String faction, ScoreboardHealthProvider.Health health) {
         long now = System.currentTimeMillis();
         Long previous = LAST_DEBUG.get(name);
         if (previous != null && now - previous < DEBUG_INTERVAL_MS) {
@@ -212,6 +237,7 @@ public final class CustomNameTagFormatter {
         Team team = entity.getTeam();
         IssuesFixDebug.log("nametag-source",
             "player=" + name
+                + " health=" + (health == null ? "none" : health.value() + "@" + health.source())
                 + " faction=" + (faction.isBlank() ? "none" : faction)
                 + " teamName=" + (team == null ? "null" : clean(team.getName()))
                 + " prefix=" + clean(teamPrefix(team))

@@ -10,10 +10,11 @@ It replaces only player nicknames, keeps normal Minecraft visibility rules, remo
 - Normal Minecraft font rendering with resource-pack compatibility
 - Friendly player names turn green when they match your scoreboard team or detected faction tag
 - Enemy or non-matching player names render red
+- Server-provided HP and heart indicator after each player nickname, with health color by value
 - Faction tags are read from scoreboard, player display data, and tablist names
 - Faction role symbols are preserved: `#` leader, `+` member, `*` captain, `-` recruit
 - Internal scoreboard team ids such as `[3playerA]` are ignored
-- Player faction suffix renders after the nickname in gray, for example `LTCFARM [#LTC]`
+- Player faction suffix renders after the health indicator in gray, for example `LTCFARM 20❤ [#LTC]`
 - Compact name spacing with no extra scoreboard padding
 - Shadow text enabled for the custom nametag
 - Transparent nametag background
@@ -52,7 +53,7 @@ If a newer release is available, click the underlined update line to open the la
 
 ## Installation
 
-1. Download `issuesfix-1.1.0.jar` from the latest release.
+1. Download `issuesfix-1.2.0.jar` from the latest release.
 2. Place it in your Fabric mods folder.
 3. Start Minecraft.
 4. Join a server and run `/issuefix` to verify the installation.
@@ -66,7 +67,7 @@ If a newer release is available, click the underlined update line to open the la
 The production JAR is generated at:
 
 ```text
-build/libs/issuesfix-1.1.0.jar
+build/libs/issuesfix-1.2.0.jar
 ```
 
 ## Configuration

@@ -31,10 +31,14 @@ public final class PlayerNameLabelMatcher {
     }
 
     public static boolean matchesNear(Component component, double x, double y, double z) {
+        return matchingPlayerNear(component, x, y, z) != null;
+    }
+
+    public static Player matchingPlayerNear(Component component, double x, double y, double z) {
         ClientLevel level = Minecraft.getInstance().level;
         String label = normalize(component);
         if (level == null || label.isBlank()) {
-            return false;
+            return null;
         }
 
         for (Player player : level.players()) {
@@ -44,10 +48,10 @@ public final class PlayerNameLabelMatcher {
             if (deltaX * deltaX + deltaZ * deltaZ <= MAX_HORIZONTAL_DISTANCE_SQUARED
                 && deltaY <= MAX_VERTICAL_DISTANCE
                 && containsPlayerName(label, player)) {
-                return true;
+                return player;
             }
         }
-        return false;
+        return null;
     }
 
     private static boolean containsPlayerName(String label, Player player) {

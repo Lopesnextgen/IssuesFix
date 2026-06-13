@@ -3,12 +3,14 @@ package davi.lopes.issuesfix.mixin;
 import com.mojang.blaze3d.vertex.PoseStack;
 import davi.lopes.issuesfix.debug.IssuesFixDebug;
 import davi.lopes.issuesfix.nametag.PlayerNameLabelMatcher;
+import davi.lopes.issuesfix.nametag.ServerNameTagHealthCache;
 import davi.lopes.issuesfix.nametag.TextDisplayNameTagState;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.DisplayRenderer;
 import net.minecraft.client.renderer.entity.state.TextDisplayEntityRenderState;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Display;
+import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -19,9 +21,11 @@ public abstract class TextDisplayRendererMixin {
     @Inject(method = "extractRenderState(Lnet/minecraft/world/entity/Display$TextDisplay;Lnet/minecraft/client/renderer/entity/state/TextDisplayEntityRenderState;F)V", at = @At("TAIL"))
     private void issuesfix$identifyPlayerNameTag(Display.TextDisplay display, TextDisplayEntityRenderState state, float partialTick, CallbackInfo callbackInfo) {
         Component text = state.textRenderState == null ? null : state.textRenderState.text();
-        boolean playerNameTag = PlayerNameLabelMatcher.matchesNear(text, display.getX(), display.getY(), display.getZ());
+        Player player = PlayerNameLabelMatcher.matchingPlayerNear(text, display.getX(), display.getY(), display.getZ());
+        boolean playerNameTag = player != null;
         ((TextDisplayNameTagState) state).issuesfix$setPlayerNameTag(playerNameTag);
         if (playerNameTag) {
+            ServerNameTagHealthCache.capture(player, text);
             IssuesFixDebug.logNametagBlock("text-display", text == null ? "" : text.getString());
         }
     }
