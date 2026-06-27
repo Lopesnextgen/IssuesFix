@@ -11,7 +11,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public final class ServerNameTagHealthCache {
-    private static final Pattern HEALTH_PATTERN = Pattern.compile("[\u2764\u2665]\\s*(\\d{1,4})");
+    private static final Pattern HEART_VALUE_PATTERN = Pattern.compile("[\u2764\u2665]\\s*(\\d{1,4})");
+    private static final Pattern LABEL_VALUE_PATTERN = Pattern.compile(
+        "(?i)(?:\\[\\s*)?(?:hp|vid|vida|health|life)\\s*\\]?\\s*[:\\-]?\\s*(\\d{1,4})"
+    );
     private static final long EXPIRATION_MS = 5000L;
     private static final Map<UUID, Entry> VALUES = new ConcurrentHashMap<>();
 
@@ -28,17 +31,16 @@ public final class ServerNameTagHealthCache {
             return;
         }
 
-        Matcher matcher = HEALTH_PATTERN.matcher(text);
-        if (!matcher.find()) {
+        Integer value = extractHeart(text);
+        if (value == null) {
+            value = extractLabel(text);
+        }
+        if (value == null) {
             return;
         }
 
-        try {
-            int value = Integer.parseInt(matcher.group(1));
-            if (value >= 0 && value <= 2048) {
-                VALUES.put(player.getUUID(), new Entry(value, System.currentTimeMillis()));
-            }
-        } catch (NumberFormatException ignored) {
+        if (value >= 0 && value <= 2048) {
+            VALUES.put(player.getUUID(), new Entry(value, System.currentTimeMillis()));
         }
     }
 
@@ -54,6 +56,30 @@ public final class ServerNameTagHealthCache {
         }
 
         return entry.value();
+    }
+
+    private static Integer extractHeart(String text) {
+        Matcher matcher = HEART_VALUE_PATTERN.matcher(text);
+        if (!matcher.find()) {
+            return null;
+        }
+        try {
+            return Integer.parseInt(matcher.group(1));
+        } catch (NumberFormatException ignored) {
+            return null;
+        }
+    }
+
+    private static Integer extractLabel(String text) {
+        Matcher matcher = LABEL_VALUE_PATTERN.matcher(text);
+        if (!matcher.find()) {
+            return null;
+        }
+        try {
+            return Integer.parseInt(matcher.group(1));
+        } catch (NumberFormatException ignored) {
+            return null;
+        }
     }
 
     private record Entry(int value, long updatedAt) {

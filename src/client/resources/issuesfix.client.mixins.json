@@ -15,7 +15,8 @@
 		"NameTagFeatureStorageMixin",
 		"SodiumFogRendererMixin",
 		"TextDisplayEntityRenderStateMixin",
-		"TextDisplayRendererMixin"
+		"TextDisplayRendererMixin",
+		"TextDisplaySyncMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

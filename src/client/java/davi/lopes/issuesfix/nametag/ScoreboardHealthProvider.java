@@ -20,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class ScoreboardHealthProvider {
     private static final int MAX_REASONABLE_HEALTH = 2048;
-    private static final long SCOREBOARD_CACHE_MS = 1000L;
+    private static final long SCOREBOARD_CACHE_MS = 50L;
     private static final Map<UUID, CachedHealth> SCOREBOARD_CACHE = new ConcurrentHashMap<>();
 
     private ScoreboardHealthProvider() {
@@ -32,19 +32,23 @@ public final class ScoreboardHealthProvider {
             if (serverNameTagHealth != null) {
                 return new Health(serverNameTagHealth, "server_nametag");
             }
+        }
 
+        Health resolved = null;
+        if (entity instanceof Player player) {
             CachedHealth cached = SCOREBOARD_CACHE.get(player.getUUID());
             long now = System.currentTimeMillis();
             if (cached != null && now - cached.updatedAt() < SCOREBOARD_CACHE_MS) {
-                return cached.health();
+                resolved = cached.health();
+            } else {
+                resolved = resolveScoreboard(entity, visibleName);
+                SCOREBOARD_CACHE.put(player.getUUID(), new CachedHealth(resolved, now));
             }
-
-            Health resolved = resolveScoreboard(entity, visibleName);
-            SCOREBOARD_CACHE.put(player.getUUID(), new CachedHealth(resolved, now));
-            return resolved;
+        } else {
+            resolved = resolveScoreboard(entity, visibleName);
         }
 
-        return resolveScoreboard(entity, visibleName);
+        return resolved;
     }
 
     private static Health resolveScoreboard(Entity entity, String visibleName) {

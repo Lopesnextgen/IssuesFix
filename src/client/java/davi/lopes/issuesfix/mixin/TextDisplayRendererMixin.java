@@ -1,7 +1,6 @@
 package davi.lopes.issuesfix.mixin;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import davi.lopes.issuesfix.debug.IssuesFixDebug;
 import davi.lopes.issuesfix.nametag.PlayerNameLabelMatcher;
 import davi.lopes.issuesfix.nametag.ServerNameTagHealthCache;
 import davi.lopes.issuesfix.nametag.TextDisplayNameTagState;
@@ -21,12 +20,14 @@ public abstract class TextDisplayRendererMixin {
     @Inject(method = "extractRenderState(Lnet/minecraft/world/entity/Display$TextDisplay;Lnet/minecraft/client/renderer/entity/state/TextDisplayEntityRenderState;F)V", at = @At("TAIL"))
     private void issuesfix$identifyPlayerNameTag(Display.TextDisplay display, TextDisplayEntityRenderState state, float partialTick, CallbackInfo callbackInfo) {
         Component text = state.textRenderState == null ? null : state.textRenderState.text();
-        Player player = PlayerNameLabelMatcher.matchingPlayerNear(text, display.getX(), display.getY(), display.getZ());
+        Player player = PlayerNameLabelMatcher.matchingByName(text);
+        if (player == null) {
+            player = PlayerNameLabelMatcher.matchingPlayerNear(text, display.getX(), display.getY(), display.getZ());
+        }
         boolean playerNameTag = player != null;
         ((TextDisplayNameTagState) state).issuesfix$setPlayerNameTag(playerNameTag);
         if (playerNameTag) {
             ServerNameTagHealthCache.capture(player, text);
-            IssuesFixDebug.logNametagBlock("text-display", text == null ? "" : text.getString());
         }
     }
 
