@@ -1,6 +1,5 @@
 package davi.lopes.issuesfix.nametag;
 
-import davi.lopes.issuesfix.debug.IssuesFixDebug;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
@@ -14,16 +13,12 @@ import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Team;
 
 import java.util.Locale;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public final class CustomNameTagFormatter {
     private static final Pattern FACTION_TAG_PATTERN = Pattern.compile("\\[([^\\]]{1,16})\\]");
     private static final Pattern INTERNAL_TEAM_PATTERN = Pattern.compile("(?i)^[0-9a-f][a-z0-9_]{2,16}a$");
-    private static final Map<String, Long> LAST_DEBUG = new ConcurrentHashMap<>();
-    private static final long DEBUG_INTERVAL_MS = 2500L;
 
     private CustomNameTagFormatter() {
     }
@@ -43,7 +38,6 @@ public final class CustomNameTagFormatter {
             component.append(Component.literal(" ").withStyle(ChatFormatting.GRAY));
             component.append(Component.literal(faction).withStyle(ChatFormatting.GRAY));
         }
-        debugSources(avatar, name, faction, health);
         return component;
     }
 
@@ -224,31 +218,5 @@ public final class CustomNameTagFormatter {
 
         String stripped = ChatFormatting.stripFormatting(value);
         return stripped == null ? "" : stripped.trim();
-    }
-
-    private static void debugSources(Entity entity, String name, String faction, ScoreboardHealthProvider.Health health) {
-        if (!IssuesFixDebug.enabled()) {
-            return;
-        }
-
-        long now = System.currentTimeMillis();
-        Long previous = LAST_DEBUG.get(name);
-        if (previous != null && now - previous < DEBUG_INTERVAL_MS) {
-            return;
-        }
-        LAST_DEBUG.put(name, now);
-
-        Team team = entity.getTeam();
-        IssuesFixDebug.log("nametag-source",
-            "player=" + name
-                + " health=" + (health == null ? "none" : health.value() + "@" + health.source())
-                + " faction=" + (faction.isBlank() ? "none" : faction)
-                + " teamName=" + (team == null ? "null" : clean(team.getName()))
-                + " prefix=" + clean(teamPrefix(team))
-                + " suffix=" + clean(teamSuffix(team))
-                + " teamDisplay=" + clean(teamDisplayName(team))
-                + " tab=" + clean(tabListDisplayName(entity))
-                + " display=" + clean(entity.getDisplayName())
-                + " name=" + clean(entity.getName()));
     }
 }

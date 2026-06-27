@@ -2,7 +2,6 @@ package davi.lopes.issuesfix.nametag;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import davi.lopes.issuesfix.config.ConfigManager;
-import davi.lopes.issuesfix.debug.IssuesFixDebug;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.client.renderer.state.CameraRenderState;
@@ -23,7 +22,6 @@ public final class NameTagFallbackSubmitter {
 
         NameTagSubmitState submitState = (NameTagSubmitState) state;
         if (!submitState.issuesfix$shouldSubmitFallbackNameTag()) {
-            IssuesFixDebug.logSubmit(state, submitState, source + "-no-fallback");
             return false;
         }
 
@@ -56,7 +54,6 @@ public final class NameTagFallbackSubmitter {
         }
 
         poseStack.popPose();
-        IssuesFixDebug.logSubmit(state, submitState, source + "-submitted");
         submitState.issuesfix$clearFallbackNameTag();
         return true;
     }

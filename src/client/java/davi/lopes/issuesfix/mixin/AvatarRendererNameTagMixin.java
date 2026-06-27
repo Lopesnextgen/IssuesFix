@@ -2,7 +2,6 @@ package davi.lopes.issuesfix.mixin;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import davi.lopes.issuesfix.config.ConfigManager;
-import davi.lopes.issuesfix.debug.IssuesFixDebug;
 import davi.lopes.issuesfix.nametag.CustomNameTagFormatter;
 import davi.lopes.issuesfix.nametag.NameTagSubmitState;
 import davi.lopes.issuesfix.nametag.NameTagVisibility;
@@ -33,11 +32,10 @@ public abstract class AvatarRendererNameTagMixin {
             PlayerOutlineFix.apply(player, state);
         }
 
-        boolean customQueued = issuesfix$queueCustomNameTag(avatar, state, partialTick, submitState);
+        issuesfix$queueCustomNameTag(avatar, state, partialTick, submitState);
         state.nameTag = null;
         state.scoreText = null;
         state.nameTagAttachment = null;
-        IssuesFixDebug.logExtract(avatar, state, customQueued ? "original-blocked-custom-queued" : "original-blocked", customQueued, customQueued);
     }
 
     @Inject(method = "submitNameTag(Lnet/minecraft/client/renderer/entity/state/AvatarRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/CameraRenderState;)V", at = @At("HEAD"), cancellable = true)

@@ -1,7 +1,5 @@
 package davi.lopes.issuesfix.lunar;
 
-import davi.lopes.issuesfix.debug.IssuesFixDebug;
-
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Optional;
@@ -41,11 +39,8 @@ public final class LunarNameTagCleaner {
 
             setCurrentLine(event, emptyComponent());
             cancel(event);
-            IssuesFixDebug.logLunar(null, "lunar-cleared", 0, "all");
-        } catch (Throwable throwable) {
-            if (FAILURE_LOGGED.compareAndSet(false, true)) {
-                IssuesFixDebug.logLunar(null, "lunar-clear-failed", 0, throwable.getClass().getSimpleName());
-            }
+        } catch (Throwable ignored) {
+            FAILURE_LOGGED.compareAndSet(false, true);
         }
     }
 
@@ -58,10 +53,8 @@ public final class LunarNameTagCleaner {
             Method getLines = method(event.getClass(), "getLines");
             Object lines = getLines == null ? null : getLines.invoke(event);
             clear(event, lines instanceof List<?> list ? list : null);
-        } catch (Throwable throwable) {
-            if (FAILURE_LOGGED.compareAndSet(false, true)) {
-                IssuesFixDebug.logLunar(null, "lunar-constructor-clear-failed", 0, throwable.getClass().getSimpleName());
-            }
+        } catch (Throwable ignored) {
+            FAILURE_LOGGED.compareAndSet(false, true);
         }
     }
 
@@ -93,9 +86,7 @@ public final class LunarNameTagCleaner {
             emptyComponent = component;
             return component;
         } catch (Throwable throwable) {
-            if (FAILURE_LOGGED.compareAndSet(false, true)) {
-                IssuesFixDebug.logLunar(null, "empty-component-failed", 0, throwable.getClass().getSimpleName());
-            }
+            FAILURE_LOGGED.compareAndSet(false, true);
             return null;
         }
     }

@@ -16,32 +16,16 @@ public final class IssuesFixConfig {
     public boolean respectScoreboardNametags = true;
     public boolean playerOutlineFix = true;
     public boolean removeWhitePlayerOutlinesAutomatically = true;
-    public boolean debug = false;
-    public int debugLogEveryMs = 1000;
-    public int debugMaxLinesPerSession = 5000;
     public int lunarNametagPresenceMs = 900;
     public int lunarFallbackDelayMs = 1300;
     public List<String> playerOutlineWorlds = new ArrayList<>();
 
     public void normalize() {
-        if (configVersion < 2) {
-            debug = false;
-            configVersion = 2;
-        }
         if (playerOutlineWorlds == null) {
             playerOutlineWorlds = new ArrayList<>();
         }
         if (removeTntExplosionParticles == null) {
             removeTntExplosionParticles = true;
-        }
-        if (debugLogEveryMs < 100) {
-            debugLogEveryMs = 100;
-        }
-        if (debugMaxLinesPerSession < 50) {
-            debugMaxLinesPerSession = 50;
-        }
-        if (clearAllNametags && debugMaxLinesPerSession < 5000) {
-            debugMaxLinesPerSession = 5000;
         }
         if (lunarNametagPresenceMs < 250) {
             lunarNametagPresenceMs = 250;

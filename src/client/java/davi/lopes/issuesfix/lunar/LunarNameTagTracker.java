@@ -3,7 +3,6 @@ package davi.lopes.issuesfix.lunar;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import davi.lopes.issuesfix.config.ConfigManager;
-import davi.lopes.issuesfix.debug.IssuesFixDebug;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.world.entity.Entity;
@@ -58,7 +57,6 @@ public final class LunarNameTagTracker {
         LAST_RENDERED_AT.put(uuid, now);
         FIRST_MISSING_AT.remove(uuid);
         CACHED_LINES.put(uuid, converted);
-        IssuesFixDebug.logLunar(uuid, "observed", converted.size(), sample(converted));
     }
 
     public static boolean isPresent(Entity entity) {
@@ -198,15 +196,9 @@ public final class LunarNameTagTracker {
                 return List.of();
             }
 
-            List<Component> converted = convert(list);
-            if (!converted.isEmpty()) {
-                IssuesFixDebug.logLunar(uuid, "cache-hit", converted.size(), sample(converted));
-            }
-            return converted;
+            return convert(list);
         } catch (Throwable throwable) {
-            if (LUNAR_CACHE_FAILURE_LOGGED.compareAndSet(false, true)) {
-                IssuesFixDebug.logLunar(uuid, "cache-read-failed", 0, throwable.getClass().getSimpleName());
-            }
+            LUNAR_CACHE_FAILURE_LOGGED.compareAndSet(false, true);
             return List.of();
         }
     }
@@ -227,9 +219,7 @@ public final class LunarNameTagTracker {
 
             return ComponentSerialization.CODEC.parse(JsonOps.INSTANCE, jsonElement).result().orElse(null);
         } catch (Throwable throwable) {
-            if (GSON_FAILURE_LOGGED.compareAndSet(false, true)) {
-                IssuesFixDebug.logLunar(null, "gson-conversion-failed", 0, throwable.getClass().getSimpleName());
-            }
+            GSON_FAILURE_LOGGED.compareAndSet(false, true);
             return null;
         }
     }
@@ -246,9 +236,7 @@ public final class LunarNameTagTracker {
             Object plain = serializerClass.getMethod("serialize", componentClass).invoke(serializer, line);
             return plain instanceof String value ? value : null;
         } catch (Throwable throwable) {
-            if (PLAIN_FAILURE_LOGGED.compareAndSet(false, true)) {
-                IssuesFixDebug.logLunar(null, "plain-conversion-failed", 0, throwable.getClass().getSimpleName());
-            }
+            PLAIN_FAILURE_LOGGED.compareAndSet(false, true);
             return null;
         }
     }
@@ -277,17 +265,5 @@ public final class LunarNameTagTracker {
         }
 
         return Optional.empty();
-    }
-
-    private static String sample(List<Component> lines) {
-        StringBuilder builder = new StringBuilder();
-        int max = Math.min(lines.size(), 3);
-        for (int index = 0; index < max; index++) {
-            if (!builder.isEmpty()) {
-                builder.append(" | ");
-            }
-            builder.append(lines.get(index).getString().replace('\n', ' ').replace('\r', ' '));
-        }
-        return builder.toString();
     }
 }

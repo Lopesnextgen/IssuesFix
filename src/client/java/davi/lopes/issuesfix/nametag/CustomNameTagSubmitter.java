@@ -1,7 +1,6 @@
 package davi.lopes.issuesfix.nametag;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import davi.lopes.issuesfix.debug.IssuesFixDebug;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.client.renderer.state.CameraRenderState;
@@ -35,7 +34,6 @@ public final class CustomNameTagSubmitter {
             cameraRenderState
         ));
 
-        IssuesFixDebug.log("custom-submit", "source=" + source + " component=" + component.getString() + " distanceSq=" + state.distanceToCameraSq);
         submitState.issuesfix$clearCustomNameTag();
         return true;
     }
